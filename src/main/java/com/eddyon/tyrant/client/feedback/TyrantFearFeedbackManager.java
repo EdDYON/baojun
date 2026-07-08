@@ -7,8 +7,8 @@ import com.eddyon.tyrant.common.registry.ModEffects;
 import java.util.Comparator;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.resources.sounds.Sound;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.resources.ResourceLocation;
@@ -21,6 +21,10 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.event.ViewportEvent;
 
 public final class TyrantFearFeedbackManager {
+   private static final double FEAR_FEEDBACK_RADIUS = 40.0D;
+   private static final double TYRANT_CLEAR_SOUND_PLAYER_RADIUS = 64.0D;
+   private static final double TYRANT_CLEAR_SOUND_EVENT_RADIUS = 72.0D;
+   private static final double PLAYER_SELF_SOUND_RADIUS = 14.0D;
    private static float visualIntensity;
    private static float pulseIntensity;
    private static float actionPressure;
@@ -51,8 +55,8 @@ public final class TyrantFearFeedbackManager {
 
          float distance = player.distanceTo(tyrant);
          boolean inView = isTyrantInView(player, tyrant);
-         if (inView || distance < 40.0F) {
-            proximityPressure = Mth.clamp(1.0F - distance / 40.0F, 0.0F, 1.0F);
+         if (inView || distance < (float)FEAR_FEEDBACK_RADIUS) {
+            proximityPressure = Mth.clamp(1.0F - distance / (float)FEAR_FEEDBACK_RADIUS, 0.0F, 1.0F);
             soundPressure = Mth.clamp(1.0F - distance / 18.0F, 0.0F, 1.0F);
             targetIntensity += 0.22F + proximityPressure * 0.64F;
             actionPressure = getActionPressure(tyrant.getCurrentAction());
@@ -164,16 +168,16 @@ public final class TyrantFearFeedbackManager {
          } else if (isTyrantThreatSound(sound, minecraft.player)) {
             return sound;
          } else if (isPlayerGeneratedSound(sound, minecraft.player)) {
-            float scale = Mth.clamp(0.24F - visualIntensity * 0.1F, 0.1F, 0.22F);
-            return new QuietSoundInstance(sound, scale);
+            return sound;
          } else {
-            return null;
+            float scale = Mth.clamp(0.2F - visualIntensity * 0.1F, 0.06F, 0.16F);
+            return new QuietSoundInstance(sound, scale);
          }
       }
    }
 
    private static TyrantEntity findNearestTyrant(Player player) {
-      List<TyrantEntity> tyrants = player.level().getEntitiesOfClass(TyrantEntity.class, (new AABB(player.blockPosition())).inflate(40.0D, 20.0D, 40.0D));
+      List<TyrantEntity> tyrants = player.level().getEntitiesOfClass(TyrantEntity.class, (new AABB(player.blockPosition())).inflate(FEAR_FEEDBACK_RADIUS, 20.0D, FEAR_FEEDBACK_RADIUS));
       return tyrants.stream().filter(TyrantEntity::isAlive).min(Comparator.comparingDouble(player::distanceToSqr)).orElse(null);
    }
 
@@ -194,14 +198,16 @@ public final class TyrantFearFeedbackManager {
    private static boolean isTyrantThreatSound(SoundInstance sound, Player player) {
       if (sound.getSource() != SoundSource.HOSTILE) {
          return false;
-      } else if (!isThreatSoundName(sound.getLocation())) {
-         return false;
       } else {
          Vec3 soundPos = new Vec3(sound.getX(), sound.getY(), sound.getZ());
-         List<TyrantEntity> tyrants = player.level().getEntitiesOfClass(TyrantEntity.class, (new AABB(player.blockPosition())).inflate(48.0D, 24.0D, 48.0D));
+         List<TyrantEntity> tyrants = player.level().getEntitiesOfClass(
+               TyrantEntity.class,
+               (new AABB(player.blockPosition())).inflate(TYRANT_CLEAR_SOUND_PLAYER_RADIUS, 32.0D, TYRANT_CLEAR_SOUND_PLAYER_RADIUS));
+         double playerRadiusSqr = TYRANT_CLEAR_SOUND_PLAYER_RADIUS * TYRANT_CLEAR_SOUND_PLAYER_RADIUS;
+         double eventRadiusSqr = TYRANT_CLEAR_SOUND_EVENT_RADIUS * TYRANT_CLEAR_SOUND_EVENT_RADIUS;
 
          for(TyrantEntity tyrant : tyrants) {
-            if (tyrant.isAlive() && tyrant.position().distanceToSqr(soundPos) <= 196.0D) {
+            if (tyrant.isAlive() && player.distanceToSqr(tyrant) <= playerRadiusSqr && tyrant.position().distanceToSqr(soundPos) <= eventRadiusSqr) {
                return true;
             }
          }
@@ -217,24 +223,7 @@ public final class TyrantFearFeedbackManager {
          double dx = sound.getX() - player.getX();
          double dy = sound.getY() - (player.getY() + 1.0D);
          double dz = sound.getZ() - player.getZ();
-         return dx * dx + dy * dy + dz * dz <= 36.0D;
-      }
-   }
-
-   private static boolean isThreatSoundName(ResourceLocation location) {
-      if (!"minecraft".equals(location.getNamespace())) {
-         return false;
-      } else {
-         String path = location.getPath();
-         return path.contains("ravager.roar")
-            || path.contains("ravager.stunned")
-            || path.contains("warden.attack")
-            || path.contains("warden.sonic_boom")
-            || path.contains("ender_dragon.growl")
-            || path.contains("generic.explode")
-            || path.contains("player.attack.sweep")
-            || path.contains("wither.spawn")
-            || path.contains("warden.death");
+         return dx * dx + dy * dy + dz * dz <= PLAYER_SELF_SOUND_RADIUS * PLAYER_SELF_SOUND_RADIUS;
       }
    }
 

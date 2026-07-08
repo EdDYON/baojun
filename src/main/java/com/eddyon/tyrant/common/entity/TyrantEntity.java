@@ -80,6 +80,9 @@ public class TyrantEntity extends Monster implements GeoEntity {
    private static final RawAnimation WALK_ANIMATION = RawAnimation.begin().thenLoop("walk");
    private static final float STEP_BREAK_SPEED = 0.2F;
    private static final float IMPACT_BREAK_SPEED = 4.8F;
+   private static final float FAR_HEAVY_SOUND_VOLUME = 4.0F;
+   private static final float FAR_MEDIUM_SOUND_VOLUME = 3.0F;
+   private static final float FAR_STEP_SOUND_VOLUME = 2.4F;
    private static final EquipmentSlot[] DISARM_ARMOR_SLOTS = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
    private static final double KING_OPPRESSION_RADIUS = 16.0D;
    private static final double PLAYER_PRIORITY_TARGET_RADIUS = 22.0D;
@@ -1329,7 +1332,7 @@ public class TyrantEntity extends Monster implements GeoEntity {
          this.spawnTakeoffBurst(forward);
          this.setDeltaMovement(travel.x, forward ? 0.68D : 0.58D, travel.z);
          this.hasImpulse = true;
-         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.RAVAGER_STEP, SoundSource.HOSTILE, forward ? 1.1F : 0.95F, forward ? 0.56F : 0.48F);
+         this.playFarTyrantSound(this.position(), SoundEvents.RAVAGER_STEP, FAR_STEP_SOUND_VOLUME, forward ? 0.56F : 0.48F);
          this.triggerScreenShake(this.position().add(0.0D, 0.6D, 0.0D), 15.0F, forward ? 0.5F : 0.36F, 6);
       }
 
@@ -1477,7 +1480,7 @@ public class TyrantEntity extends Monster implements GeoEntity {
       this.spawnBlockShockwave(origin, radius + 0.35F, waveIndex == 1 ? 30 : 42, waveIndex == 1 ? 0.16D : 0.22D, true);
       this.spawnEpicImpactBurst(origin, radius * 0.65F, waveIndex == 2);
       this.triggerScreenShake(origin, waveIndex == 1 ? 14.0F : 18.0F, waveIndex == 1 ? 0.5F : 0.78F, waveIndex == 1 ? 6 : 8);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, SoundEvents.WARDEN_ATTACK_IMPACT, SoundSource.HOSTILE, waveIndex == 1 ? 0.58F : 0.74F, waveIndex == 1 ? 0.92F : 0.78F);
+      this.playFarTyrantSound(origin, SoundEvents.WARDEN_ATTACK_IMPACT, FAR_MEDIUM_SOUND_VOLUME, waveIndex == 1 ? 0.92F : 0.78F);
    }
 
    private void performTailSweep(double radius, float damage, double knockback) {
@@ -1490,9 +1493,9 @@ public class TyrantEntity extends Monster implements GeoEntity {
       this.spawnEpicImpactBurst(origin, (float)radius + 0.3F, false);
       this.rendSweepTerrain(origin, radius, true);
       this.triggerScreenShake(origin, 27.0F, 1.75F, 16);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.HOSTILE, 1.35F, 0.46F);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, SoundEvents.WARDEN_ATTACK_IMPACT, SoundSource.HOSTILE, 1.25F, 0.56F);
-      this.level().playSound((Player)null, origin.x, origin.y + 0.8D, origin.z, SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 0.72F, 0.62F);
+      this.playFarTyrantSound(origin, SoundEvents.PLAYER_ATTACK_SWEEP, FAR_MEDIUM_SOUND_VOLUME, 0.46F);
+      this.playFarTyrantSound(origin, SoundEvents.WARDEN_ATTACK_IMPACT, FAR_HEAVY_SOUND_VOLUME, 0.56F);
+      this.playFarTyrantSound(origin.add(0.0D, 0.8D, 0.0D), SoundEvents.RAVAGER_ROAR, FAR_MEDIUM_SOUND_VOLUME, 0.62F);
    }
 
    private void performThroneStomp(float radius, float damage, double knockback) {
@@ -1504,9 +1507,9 @@ public class TyrantEntity extends Monster implements GeoEntity {
       this.spawnEpicImpactBurst(origin, radius + 1.25F, true);
       TyrantTerrainHelper.tearTerrain(this, origin, 3.8F, 4.7F, 0.78F);
       this.triggerScreenShake(origin, 34.0F, 2.65F, 24);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.18F, 0.62F);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, SoundEvents.WARDEN_ATTACK_IMPACT, SoundSource.HOSTILE, 1.65F, 0.42F);
-      this.level().playSound((Player)null, origin.x, origin.y + 1.0D, origin.z, SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, 0.95F, 0.46F);
+      this.playFarTyrantSound(origin, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), FAR_HEAVY_SOUND_VOLUME, 0.62F);
+      this.playFarTyrantSound(origin, SoundEvents.WARDEN_ATTACK_IMPACT, FAR_HEAVY_SOUND_VOLUME, 0.42F);
+      this.playFarTyrantSound(origin.add(0.0D, 1.0D, 0.0D), SoundEvents.RAVAGER_ROAR, FAR_MEDIUM_SOUND_VOLUME, 0.46F);
    }
 
    private void performThroneStompAftershock(float radius, float damage, double knockback) {
@@ -1516,7 +1519,7 @@ public class TyrantEntity extends Monster implements GeoEntity {
       this.spawnGroundPressureRing(origin, radius * 0.48F, false);
       this.spawnEpicImpactBurst(origin, radius * 0.74F, false);
       this.triggerScreenShake(origin, 24.0F, 1.15F, 12);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 0.62F, 0.9F);
+      this.playFarTyrantSound(origin, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), FAR_MEDIUM_SOUND_VOLUME, 0.9F);
    }
 
    private void performGroundWave(float radius, float damage, double knockback, boolean longWave) {
@@ -1529,9 +1532,9 @@ public class TyrantEntity extends Monster implements GeoEntity {
       this.spawnEpicImpactBurst(origin.add(facing.scale((double)radius * 0.24D)), radius + (longWave ? 1.45F : 0.72F), longWave);
       TyrantTerrainHelper.tearTerrain(this, origin.add(facing.scale(longWave ? 2.1D : 1.35D)), longWave ? 4.5F : 3.1F, longWave ? 3.8F : 2.8F, longWave ? 0.44F : 0.3F);
       this.triggerScreenShake(origin, longWave ? 34.0F : 26.0F, longWave ? 2.55F : 1.72F, longWave ? 24 : 15);
-      this.level().playSound((Player)null, origin.x, origin.y + 1.0D, origin.z, SoundEvents.WARDEN_SONIC_BOOM, SoundSource.HOSTILE, longWave ? 1.18F : 0.96F, longWave ? 0.64F : 0.74F);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, longWave ? 0.92F : 0.58F, 0.82F);
-      this.level().playSound((Player)null, origin.x, origin.y + 0.9D, origin.z, SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, longWave ? 0.9F : 0.68F, longWave ? 0.6F : 0.74F);
+      this.playFarTyrantSound(origin.add(0.0D, 1.0D, 0.0D), SoundEvents.WARDEN_SONIC_BOOM, longWave ? FAR_HEAVY_SOUND_VOLUME : FAR_MEDIUM_SOUND_VOLUME, longWave ? 0.64F : 0.74F);
+      this.playFarTyrantSound(origin, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), longWave ? FAR_HEAVY_SOUND_VOLUME : FAR_MEDIUM_SOUND_VOLUME, 0.82F);
+      this.playFarTyrantSound(origin.add(0.0D, 0.9D, 0.0D), SoundEvents.RAVAGER_ROAR, FAR_MEDIUM_SOUND_VOLUME, longWave ? 0.6F : 0.74F);
    }
 
    private void performLeapImpact(float radius, float damage, double knockback, boolean forward) {
@@ -1545,14 +1548,13 @@ public class TyrantEntity extends Monster implements GeoEntity {
       this.spawnGroundFractureLine(origin, facing, 0, 4.6D, 1.35D, 4);
       this.spawnLandingColumns(origin, (double)radius + 0.95D);
       this.spawnEpicImpactBurst(origin, radius + 1.2F, true);
-      float craterRadius = (forward ? 6.35F : 5.45F) + (this.phaseTwoActive ? 0.45F : 0.0F);
-      int craterDepth = forward || this.phaseTwoActive ? 3 : 2;
-      TyrantTerrainHelper.carveImpactCrater(this, origin, craterRadius, craterDepth, forward ? 5.4F : IMPACT_BREAK_SPEED, forward ? 0.86F : 0.72F);
+      float craterRadius = (forward ? 3.75F : 3.45F) + this.random.nextFloat() * 0.65F + (this.phaseTwoActive ? 0.35F : 0.0F);
+      TyrantTerrainHelper.carveImpactCrater(this, origin, craterRadius, 5, 8.0F, forward ? 1.08F : 0.98F);
       this.spawnCraterRubble(origin, craterRadius, true);
       this.triggerScreenShake(origin, 34.0F, forward ? 3.15F : 2.35F, forward ? 26 : 20);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 1.22F, forward ? 0.7F : 0.82F);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, SoundEvents.WARDEN_ATTACK_IMPACT, SoundSource.HOSTILE, 1.45F, 0.54F);
-      this.level().playSound((Player)null, origin.x, origin.y + 0.8D, origin.z, SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, forward ? 0.85F : 0.62F, forward ? 0.62F : 0.7F);
+      this.playFarTyrantSound(origin, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), FAR_HEAVY_SOUND_VOLUME, forward ? 0.7F : 0.82F);
+      this.playFarTyrantSound(origin, SoundEvents.WARDEN_ATTACK_IMPACT, FAR_HEAVY_SOUND_VOLUME, 0.54F);
+      this.playFarTyrantSound(origin.add(0.0D, 0.8D, 0.0D), SoundEvents.RAVAGER_ROAR, FAR_MEDIUM_SOUND_VOLUME, forward ? 0.62F : 0.7F);
    }
 
    private void performLeapAftershock(float radius, float damage, double knockback, boolean forward, int pulseIndex) {
@@ -1567,7 +1569,7 @@ public class TyrantEntity extends Monster implements GeoEntity {
       this.spawnGroundPressureRing(origin, pulseIndex == 1 ? 2.6F : 3.0F, pulseIndex == 2);
       this.spawnPressureWavefront(origin, facing, (double)scaledRadius * (forward ? 0.82D : 0.68D), pulseIndex == 2 || this.phaseTwoActive);
       this.triggerScreenShake(origin, pulseIndex == 1 ? 18.0F : 22.0F, pulseIndex == 1 ? 0.88F : 1.05F, pulseIndex == 1 ? 9 : 11);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, pulseIndex == 1 ? 0.58F : 0.72F, pulseIndex == 1 ? 1.05F : 0.92F);
+      this.playFarTyrantSound(origin, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), FAR_MEDIUM_SOUND_VOLUME, pulseIndex == 1 ? 1.05F : 0.92F);
    }
 
    private Vec3 getLeapArmImpactCenter(boolean forward) {
@@ -2220,10 +2222,14 @@ public class TyrantEntity extends Monster implements GeoEntity {
    }
 
    private void playImpactSound(Vec3 origin, float volume, float pitch) {
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, SoundEvents.WARDEN_ATTACK_IMPACT, SoundSource.HOSTILE, volume, pitch);
-      this.level().playSound((Player)null, origin.x, origin.y, origin.z, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, volume * 0.72F, pitch + 0.06F);
-      this.level().playSound((Player)null, origin.x, origin.y + 0.4D, origin.z, SoundEvents.RAVAGER_ROAR, SoundSource.HOSTILE, volume * 0.56F, Math.max(0.18F, pitch * 0.78F));
-      this.level().playSound((Player)null, origin.x, origin.y + 0.2D, origin.z, SoundEvents.WARDEN_HEARTBEAT, SoundSource.HOSTILE, volume * 0.42F, Math.max(0.2F, pitch * 0.72F));
+      this.playFarTyrantSound(origin, SoundEvents.WARDEN_ATTACK_IMPACT, Math.max(FAR_MEDIUM_SOUND_VOLUME, volume * 1.85F), pitch);
+      this.playFarTyrantSound(origin, (SoundEvent)SoundEvents.GENERIC_EXPLODE.value(), Math.max(FAR_MEDIUM_SOUND_VOLUME, volume * 1.55F), pitch + 0.06F);
+      this.playFarTyrantSound(origin.add(0.0D, 0.4D, 0.0D), SoundEvents.RAVAGER_ROAR, Math.max(FAR_STEP_SOUND_VOLUME, volume * 1.25F), Math.max(0.18F, pitch * 0.78F));
+      this.playFarTyrantSound(origin.add(0.0D, 0.2D, 0.0D), SoundEvents.WARDEN_HEARTBEAT, Math.max(1.8F, volume * 0.86F), Math.max(0.2F, pitch * 0.72F));
+   }
+
+   private void playFarTyrantSound(Vec3 origin, SoundEvent sound, float volume, float pitch) {
+      this.level().playSound((Player)null, origin.x, origin.y, origin.z, sound, SoundSource.HOSTILE, volume, pitch);
    }
 
    private void spawnChestChargeParticles() {
@@ -2322,9 +2328,9 @@ public class TyrantEntity extends Monster implements GeoEntity {
    }
 
    private void rendSweepTerrain(Vec3 origin, double radius, boolean heavy) {
-      float outerRadius = (float)radius + (heavy ? 0.95F : 0.65F);
-      float innerRadius = heavy ? 1.2F : 1.45F;
-      TyrantTerrainHelper.tearTerrainRing(this, origin, innerRadius, outerRadius, heavy ? 3.6F : 2.9F, heavy ? 0.66F : 0.48F);
+      float outerRadius = (float)radius + (heavy ? 1.2F : 0.85F);
+      float innerRadius = Math.max(1.35F, outerRadius - (heavy ? 2.25F : 1.7F));
+      TyrantTerrainHelper.tearTerrainRing(this, origin, innerRadius, outerRadius, heavy ? 4.8F : 3.6F, heavy ? 0.86F : 0.64F);
       this.spawnGroundPressureRing(origin, outerRadius * 0.82F, heavy);
    }
 
@@ -2631,9 +2637,10 @@ public class TyrantEntity extends Monster implements GeoEntity {
    protected void playStepSound(BlockPos pos, BlockState blockState) {
       if (this.tickCount - this.lastStepSoundTick >= (this.phaseTwoActive ? 8 : 10)) {
          this.lastStepSoundTick = this.tickCount;
-         this.playSound(SoundEvents.RAVAGER_STEP, this.phaseTwoActive ? 1.42F : 1.2F, this.phaseTwoActive ? 0.34F : 0.42F);
-         this.level().playSound((Player)null, this.getX(), this.getY(), this.getZ(), SoundEvents.IRON_GOLEM_STEP, SoundSource.HOSTILE, this.phaseTwoActive ? 1.08F : 0.92F, this.phaseTwoActive ? 0.44F : 0.52F);
-         this.level().playSound((Player)null, this.getX(), this.getY() + 0.2D, this.getZ(), SoundEvents.WARDEN_HEARTBEAT, SoundSource.HOSTILE, this.phaseTwoActive ? 0.42F : 0.3F, this.phaseTwoActive ? 0.46F : 0.54F);
+         Vec3 stepSoundOrigin = this.position();
+         this.playFarTyrantSound(stepSoundOrigin, SoundEvents.RAVAGER_STEP, this.phaseTwoActive ? FAR_MEDIUM_SOUND_VOLUME : FAR_STEP_SOUND_VOLUME, this.phaseTwoActive ? 0.34F : 0.42F);
+         this.playFarTyrantSound(stepSoundOrigin, SoundEvents.IRON_GOLEM_STEP, this.phaseTwoActive ? FAR_STEP_SOUND_VOLUME : 2.0F, this.phaseTwoActive ? 0.44F : 0.52F);
+         this.playFarTyrantSound(stepSoundOrigin.add(0.0D, 0.2D, 0.0D), SoundEvents.WARDEN_HEARTBEAT, this.phaseTwoActive ? 1.6F : 1.25F, this.phaseTwoActive ? 0.46F : 0.54F);
          if (!this.level().isClientSide() && this.onGround()) {
             Vec3 stepOrigin = this.position().add(0.0D, 0.15D, 0.0D);
             this.spawnGroundPressureRing(stepOrigin, this.phaseTwoActive ? 1.8F : 1.4F, this.phaseTwoActive);

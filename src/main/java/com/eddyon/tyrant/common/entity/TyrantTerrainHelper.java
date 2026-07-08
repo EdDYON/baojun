@@ -69,24 +69,26 @@ final class TyrantTerrainHelper {
       }
 
       int gridRadius = Mth.ceil(radius);
-      float radiusSqr = radius * radius;
       int clampedDepth = Mth.clamp(maxDepth, 1, 5);
 
       for(int x = -gridRadius; x <= gridRadius; ++x) {
          for(int z = -gridRadius; z <= gridRadius; ++z) {
             float horizontalSqr = (float)(x * x + z * z);
-            if (!(horizontalSqr > radiusSqr)) {
+            float roughRadius = radius + (tyrant.getRandom().nextFloat() - 0.5F) * 0.85F;
+            if (!(horizontalSqr > roughRadius * roughRadius)) {
                float distance = Mth.sqrt(horizontalSqr);
-               float edgeFactor = 1.0F - Mth.clamp(distance / radius, 0.0F, 1.0F);
-               float breakChance = density * (0.5F + edgeFactor * 0.85F);
+               float edgeFactor = 1.0F - Mth.clamp(distance / roughRadius, 0.0F, 1.0F);
+               float breakChance = Mth.clamp(density * (0.62F + edgeFactor * 0.78F), 0.0F, 1.0F);
                if (!(tyrant.getRandom().nextFloat() > breakChance)) {
                   Vec3 probe = origin.add((double)x, 0.45D, (double)z);
                   BlockPos surfacePos = findImpactSurface(tyrant, probe);
-                  int columnDepth = Mth.clamp(1 + Mth.floor(edgeFactor * (float)clampedDepth), 1, clampedDepth);
+                  int depthJitter = edgeFactor > 0.32F && tyrant.getRandom().nextBoolean() ? 1 : 0;
+                  int columnDepth = Mth.clamp(1 + Mth.floor(edgeFactor * (float)(clampedDepth - 1)) + depthJitter, 1, clampedDepth);
+                  boolean coreColumn = distance <= Math.max(1.35F, radius * 0.24F);
 
                   for(int depth = 0; depth < columnDepth; ++depth) {
-                     float depthFactor = 1.0F - (float)depth / (float)(clampedDepth + 1);
-                     if (depth == 0 || !(tyrant.getRandom().nextFloat() > breakChance * depthFactor)) {
+                     float depthFactor = 1.0F - (float)depth / (float)(clampedDepth + 2);
+                     if (coreColumn || depth == 0 || !(tyrant.getRandom().nextFloat() > breakChance * depthFactor)) {
                         tryTearBlock(serverLevel, tyrant, surfacePos.below(depth), maxDestroySpeed, depth == 0 ? 3 : 2);
                      }
                   }
