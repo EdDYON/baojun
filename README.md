@@ -9,20 +9,6 @@ NeoForge `1.21.1` Boss 模组。当前内部命名空间为 `tyrant`，玩家可
 - Java `21`
 - GeckoLib `4.6.6`
 
-## 常用命令
-
-```powershell
-.\gradlew.bat runClient
-.\gradlew.bat build
-.\gradlew.bat --no-configuration-cache compileJava
-```
-
-如果当前终端没有配置 Java，可以临时使用仓库旁的 JDK 21：
-
-```powershell
-$env:JAVA_HOME='D:\MinecraftModWorkspace\jdks\microsoft-jdk-21\jdk-21.0.11+10'
-$env:Path="$env:JAVA_HOME\bin;$env:Path"
-```
 
 ## 配置文件
 
