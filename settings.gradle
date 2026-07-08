@@ -1,0 +1,12 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://maven.neoforged.net/releases' }
+        mavenCentral()
+
+        maven { url 'https://mirrors.cloud.tencent.com/nexus/repository/maven-public/' }
+        maven { url 'https://mirrors.aliyun.com/maven/' }
+        maven { url 'https://mirrors.tuna.tsinghua.edu.cn/maven/' }
+        maven { url 'https://mirrors.ustc.edu.cn/maven/' }
+    }
+}

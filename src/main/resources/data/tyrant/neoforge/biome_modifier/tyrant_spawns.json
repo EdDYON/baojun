@@ -1,0 +1,10 @@
+﻿{
+  "type": "neoforge:add_spawns",
+  "biomes": "#tyrant:has_spawn/tyrant",
+  "spawners": {
+    "type": "tyrant:tyrant",
+    "weight": 2,
+    "minCount": 1,
+    "maxCount": 1
+  }
+}

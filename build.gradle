@@ -1,0 +1,102 @@
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '1.0.15'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+def minecraftVersion = minecraft_version
+def minecraftVersionRange = minecraft_version_range
+def neoVersion = neo_version
+def neoVersionRange = neo_version_range
+def loaderVersionRange = loader_version_range
+def modId = mod_id
+def modName = mod_name
+def modLicense = mod_license
+def modVersion = mod_version
+def modGroupId = mod_group_id
+def modAuthors = mod_authors
+def modDescription = mod_description
+
+group = modGroupId
+version = modVersion
+
+base {
+    archivesName = modId
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = neoVersion
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', modId
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', modId
+        }
+    }
+
+    mods {
+        register(modId) {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        name = "GeckoLib"
+        url = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
+    }
+}
+
+dependencies {
+    implementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:4.6.6"
+}
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version      : minecraftVersion,
+            minecraft_version_range: minecraftVersionRange,
+            neo_version            : neoVersion,
+            neo_version_range      : neoVersionRange,
+            loader_version_range   : loaderVersionRange,
+            mod_id                 : modId,
+            mod_name               : modName,
+            mod_license            : modLicense,
+            mod_version            : modVersion,
+            mod_authors            : modAuthors,
+            mod_description        : modDescription
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "file://${project.projectDir}/repo"
+        }
+    }
+}
